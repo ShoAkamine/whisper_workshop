@@ -1,0 +1,9 @@
+pandas
+ffmpeg
+ffmpeg-python
+soundfile
+datetime
+git+https://github.com/m-bain/whisperx.git
+moviepy
+jupyter
+deepl
