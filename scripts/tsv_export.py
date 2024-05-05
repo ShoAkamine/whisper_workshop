@@ -97,12 +97,16 @@ def format_transcript(result, filename, output_folder):
 
     output_filename_pair = filename.split("_denoised")[0]
     output_filename_pair = output_filename_pair.split(".txt")[0]
-    output_filename = os.path.join(output_folder,output_filename_pair)
+    output_filename = os.path.join(output_folder, "tsv", output_filename_pair)
 
     return df_output, output_filename
 
 def export_transcript_as_tsv(result, filename, output_folder):
     df_output, output_filename = format_transcript(result, filename, output_folder)
+    # we only need the following columns
+    df_output = df_output[['start_word_timestamp', 'end_word_timestamp', 'text_final']]
+    #change column names
+    df_output = df_output.rename(columns={"start_word_timestamp": "start", "end_word_timestamp": "end", "text_final": "text"})
     df_output.to_csv(f"{output_filename}.txt", index=False, sep="\t")
 
 
