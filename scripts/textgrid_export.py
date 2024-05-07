@@ -6,7 +6,7 @@ def export_transcript_as_textgrid(result, filename, output_folder):
 
     sentences_tier = tgt.IntervalTier(start_time=0, end_time=result["segments"][-1]["end"], name="sentence")
     word_tier = tgt.IntervalTier(start_time=0, end_time=result["segments"][-1]["end"], name="word")
-    phoneme_tier = tgt.IntervalTier(start_time=0, end_time=result["segments"][-1]["end"], name="phoneme")
+    phoneme_tier = tgt.IntervalTier(start_time=0, end_time=result["segments"][-1]["end"], name="char")
 
     punctuations = [".", ",", "!", "?", " "]
 

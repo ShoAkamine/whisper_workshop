@@ -45,16 +45,9 @@ def format_transcript(result, filename, output_folder):
         text = ""
         count = 0
         second_count = 0 #this is for the case where there are multiple sentences within one segment
-        first_word_disfluency = False
 
         for word in segment["words"]:
-            if word.get("word") == "[*]":
-                if count == 0:
-                    first_word_disfluency = True
-                count += 1
-                continue #go to the next word
-            
-            elif count == 0 or second_count == 1 or first_word_disfluency: #if this is the first word and not a disfluency marker
+            if count == 0 or second_count == 1: #if this is the first word
                 text = word.get("word")
                 segment["start_word"] = text
                 segment["start_word_timestamp"] = convert_time_float_to_string(word.get("start"))               
@@ -62,7 +55,6 @@ def format_transcript(result, filename, output_folder):
                 segment["end_word"] = text
                 segment["end_word_timestamp"] = convert_time_float_to_string(word.get("end"))
                 second_count = 0 #reset second_count so that next word won't be considerd as the start word
-                first_word_disfluency = False
 
             elif count == len(segment["words"]) -1: #if this is the last word
                 text += " " + word.get("word")
@@ -95,9 +87,7 @@ def format_transcript(result, filename, output_folder):
         # if pd.isnull(df_output.loc[index, "end_word_timestamp"]):
         #     df_output.loc[index, 'end_word_timestamp'] = df_output.loc[index, "end"]
 
-    output_filename_pair = filename.split("_denoised")[0]
-    output_filename_pair = output_filename_pair.split(".txt")[0]
-    output_filename = os.path.join(output_folder, "tsv", output_filename_pair)
+    output_filename = os.path.join(output_folder, "tsv", filename)
 
     return df_output, output_filename
 
@@ -107,7 +97,7 @@ def export_transcript_as_tsv(result, filename, output_folder):
     df_output = df_output[['start_word_timestamp', 'end_word_timestamp', 'text_final']]
     #change column names
     df_output = df_output.rename(columns={"start_word_timestamp": "start", "end_word_timestamp": "end", "text_final": "text"})
-    df_output.to_csv(f"{output_filename}.txt", index=False, sep="\t")
+    df_output.to_csv(output_filename, index=False, sep="\t")
 
 
 def export_transcript_as_tsv_textonly(result, filename, output_folder):
@@ -116,4 +106,4 @@ def export_transcript_as_tsv_textonly(result, filename, output_folder):
     df_output = df_output[['text_final']]
     # remove the column header so that the output starts with the first row
     df_output = df_output.rename(columns={'text_final': ''})
-    df_output.to_csv(f"{output_filename}.txt", index=False, sep="\t")
+    df_output.to_csv(output_filename, index=False, sep="\t")
