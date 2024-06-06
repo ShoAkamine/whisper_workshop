@@ -6,7 +6,43 @@ import os
 from time_format_converter import convert_time_float_to_string
 
 
-### Define functions to export the transcript as a tsv file ###
+### Create a function to adjust the timestamps of the last phoneme in each segment=========================================
+def get_last_phoneme_timestamp(segment, word, puncts):
+    #get the start and end time of the last phoneme
+    if word.get("word").count(".") > 1: #the count is to ignore prolonged utterance like "ik..."
+        last_phoneme_end = word.get("end")
+    elif word.get("word")[-1] not in puncts: #if the last phoneme of the word is not a punctuation or in the word2vec dictionary, then this word isn't the last word in the segment
+        last_phoneme_end = word.get("end")
+    elif "è" in word.get("word"): #this is to handle the case where the last phoneme is è, which is not in the word2vec dictionary
+        last_phoneme_end = word.get("end")
+    elif word.get("word")[-1].isnumeric() or word.get("word")[-2].isnumeric(): #if the last or second-to-last character is a number, then set the end time to the end time of the word
+        last_phoneme_end = word.get("end")
+    else:
+        try:
+            index_word = segment["text"].index(word.get("word"))
+            index_phoneme = index_word + len(word.get("word")) - 2
+        except:
+            print(f"ERROR: The word is not in the segment. Word = {word.get('word')}; Segment = {segment['text']}")
+        
+        try:
+            last_phoneme_dict = segment["chars"][index_phoneme]
+            last_phoneme_start = last_phoneme_dict["start"]
+            last_phoneme_end_original = last_phoneme_dict["end"]
+            duration = last_phoneme_end_original - last_phoneme_start
+        except:
+            print(f"ERROR: There is no phoneme in the segment. Phoneme = {last_phoneme_dict['char']}; Word = {word.get('word')}; Segment = {segment['text']}")
+        
+        #if the duration is longer than 1 second, we will set the end time to 50ms after the start time
+        if duration > 1:
+            last_phoneme_end = last_phoneme_start + 0.050 #if the duration is longer than 1 second, we will set the end time to 50ms after the start time
+        else:
+            last_phoneme_end = word.get("end") #if the duration is less than 1 second, we will set the end time to the end time of the word
+    
+    return convert_time_float_to_string(last_phoneme_end)
+
+
+
+############# Define functions to export the transcript as a tsv file ##################
 
 def make_row_for_each_segment(segment, text, df_output):
     #make a row for each segment
@@ -21,7 +57,13 @@ def make_row_for_each_segment(segment, text, df_output):
     return df_output
 
 
-def format_transcript(result, filename, output_folder):
+def format_transcript(result, filename, output_folder, puncts, word_spacing=True):
+    #if word_spacing is True, we will add a space between words (some languages don't have spaces between words in the transcript)
+    if word_spacing:
+        word_space = " "
+    else:
+        word_space = ""
+
     transcript = copy.deepcopy(result)
     # make an empty dataframe to store the output
     df_output = pd.DataFrame(columns=["start_word_timestamp", "end_word_timestamp", "text_final", 
@@ -45,26 +87,37 @@ def format_transcript(result, filename, output_folder):
         text = ""
         count = 0
         second_count = 0 #this is for the case where there are multiple sentences within one segment
+        n_words = len(segment["words"])
 
         for word in segment["words"]:
-            if count == 0 or second_count == 1: #if this is the first word
+            #### First word (empty "text" variable) ####
+            if text == "" or second_count == 1:
                 text = word.get("word")
                 segment["start_word"] = text
                 segment["start_word_timestamp"] = convert_time_float_to_string(word.get("start"))               
                 # "end_word" and "end_word_timestamp" will be overwritten if there are multiple words within one segment
                 segment["end_word"] = text
-                segment["end_word_timestamp"] = convert_time_float_to_string(word.get("end"))
+                segment["end_word_timestamp"] = get_last_phoneme_timestamp(segment, word, puncts)
+                if word.get("word")[-1] not in puncts:
+                    previous_endTime = convert_time_float_to_string(word.get("end"))
                 second_count = 0 #reset second_count so that next word won't be considerd as the start word
 
-            elif count == len(segment["words"]) -1: #if this is the last word
-                text += " " + word.get("word")
-                segment["end_word"] = word.get("word")
-                segment["end_word_timestamp"] = convert_time_float_to_string(word.get("end"))
+            #### Last word ####
+            elif count == n_words-1: #if this is the last word
+                text += word_space + word.get("word")
+                if word.get("end") is not None:
+                    segment["end_word"] = word.get("word")
+                    segment["end_word_timestamp"] = get_last_phoneme_timestamp(segment, word, puncts)
+                    previous_endTime = get_last_phoneme_timestamp(segment, word, puncts)
+                else:
+                    segment["end_word_timestamp"] = previous_endTime
 
+            #### Middle words ####
             else:
-                text += " " + word.get("word")
-                # if the word contains a punctuation and not the last word in the segment, we will make a row for this utterance
-                if word.get("word")[-1] in [".", "?", "!"]:
+                text += word_space + word.get("word")
+                #### Words that end with punctuations ####
+                # if the word contains a punctuation, we will make a row for this utterance
+                if word.get("word")[-1] in puncts:
                     segment["end_word"] = word.get("word")
                     segment["end_word_timestamp"] = convert_time_float_to_string(word.get("end"))
                     
@@ -91,8 +144,8 @@ def format_transcript(result, filename, output_folder):
 
     return df_output, output_filename
 
-def export_transcript_as_tsv(result, filename, output_folder):
-    df_output, output_filename = format_transcript(result, filename, output_folder)
+def export_transcript_as_tsv(result, filename, output_folder, puncts):
+    df_output, output_filename = format_transcript(result, filename, output_folder, puncts)
     # we only need the following columns
     df_output = df_output[['start_word_timestamp', 'end_word_timestamp', 'text_final']]
     #change column names
@@ -100,10 +153,11 @@ def export_transcript_as_tsv(result, filename, output_folder):
     df_output.to_csv(output_filename, index=False, sep="\t")
 
 
-def export_transcript_as_tsv_textonly(result, filename, output_folder):
-    df_output, output_filename = format_transcript(result, filename, output_folder)
+def export_transcript_as_tsv_textonly(filename, output_folder):
+    tsv_file = os.path.join(output_folder, "tsv", filename)
+    df_output = pd.read_csv(tsv_file, sep="\t")
+    output_filename = os.path.join(output_folder, "text_only", filename)
     # we only need the text_final column
-    df_output = df_output[['text_final']]
+    df_output = df_output[['text']]
     # remove the column header so that the output starts with the first row
-    df_output = df_output.rename(columns={'text_final': ''})
-    df_output.to_csv(output_filename, index=False, sep="\t")
+    df_output.to_csv(output_filename, header=None, index=False, sep="\t")

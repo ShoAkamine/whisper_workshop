@@ -18,11 +18,11 @@ def convert_time_float_to_string(flt_timestamp):
 
 
 ### Function to convert string time to float
-def convert_string_to_float(str_series):
-    dt_series = pd.to_timedelta(str_series).dt.total_seconds()
-    return dt_series
+def convert_string_to_float(str_timestamp):
+    if str_timestamp == None:
+        t_formatted = None
+    else:
+        t = datetime.strptime(str_timestamp, "%H:%M:%S.%f")
+        t_formatted = timedelta(hours=t.hour, minutes=t.minute, seconds=t.second, microseconds=t.microsecond).total_seconds()
 
-# str_series = pd.Series(["01:23:45.678", "02:34:56.789"])
-# output:
-# 0    5025.678
-# 1    9276.789
+    return t_formatted
