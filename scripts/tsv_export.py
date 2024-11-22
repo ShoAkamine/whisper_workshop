@@ -153,11 +153,25 @@ def export_transcript_as_tsv(result, filename, output_folder, puncts):
     df_output.to_csv(output_filename, index=False, sep="\t")
 
 
-def export_transcript_as_tsv_textonly(filename, output_folder):
-    tsv_file = os.path.join(output_folder, "tsv", filename)
-    df_output = pd.read_csv(tsv_file, sep="\t")
+def export_transcript_as_textonly(result, filename, output_folder):
+    transcript = copy.deepcopy(result)
+    # make an empty dataframe to store the output
+    df_output = pd.DataFrame(columns=["text"])
+
+    # save result["segments"] as segments so that I don't need to type result[""] everytime
+    segments = transcript["segments"]
+
+    #list all the keys to be removed from the output
+    remove_keys = ["seek", "tokens"]
+    for segment in segments:
+        for key in remove_keys:
+            if key in segment:
+                del segment[key]
+
+    for segment in segments:
+        #make a row for each segment
+        row = pd.DataFrame([segment], columns=["text"])
+        df_output = pd.concat([df_output, row], ignore_index=True)
+
     output_filename = os.path.join(output_folder, "text_only", filename)
-    # we only need the text_final column
-    df_output = df_output[['text']]
-    # remove the column header so that the output starts with the first row
-    df_output.to_csv(output_filename, header=None, index=False, sep="\t")
+    df_output.to_csv(output_filename, header=None, index=False)

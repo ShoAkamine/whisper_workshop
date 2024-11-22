@@ -5,7 +5,7 @@ import os
 def extract_wav(path):
     wav_file = path[:-4] + ".wav"
     #if the filename ends with .mov AND the same filename with .wav doesn't exist
-    if (path.endswith(".mov") or path.endswith(".mp4")) and not os.path.exists(wav_file):
+    if (path.endswith(".mov") or path.endswith(".mp4") or path.endswith(".MOV") or path.endswith(".MP4")) and not os.path.exists(wav_file):
         print(f"Extracting audio from {path}")
         file = path
 

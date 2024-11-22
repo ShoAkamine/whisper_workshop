@@ -9,3 +9,4 @@ moviepy
 jupyter
 deepl
 tgt
+tqdm
