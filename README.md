@@ -19,7 +19,7 @@ Before running the script, you need to have the following installed:
 You can run WhisperX and export the trascript by following the steps below:
 
 1. Download the repository. You can do so in two different ways:
-    - Option 1: clone the repository \\
+    - Option 1: clone the repository
     - Option 2: click the green "<> Code" button on this page and select "Download ZIP". Make sure to unzip the folder before moving on to the next step. 
 
 2. Go to the "scripts" folder
