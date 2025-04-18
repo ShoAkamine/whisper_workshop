@@ -4,7 +4,7 @@ ffmpeg-python
 sox
 soundfile
 datetime
-git+https://github.com/m-bain/whisperx.git
+whisperx
 moviepy
 jupyter
 deepl
