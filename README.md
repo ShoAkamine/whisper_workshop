@@ -34,6 +34,7 @@ You can run WhisperX and export the trascript by following the steps below:
 
 7. Output transcripts can be found in the "output" folder.
 
+You only need to follow steps 1--4 once. After setting up the Anaconda environment, you can start from step 5.
 
 ## Error solution guide
 If you encounter some issues running the whisper.ipynb notebook, please check [this document](https://docs.google.com/document/d/1GwX3aM83n4W-JVmOpEvhqh_H0Fmwd2kcZDsic5WiXR4/edit?usp=sharing) for solutions! 
