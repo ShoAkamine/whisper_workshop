@@ -22,13 +22,17 @@ You can run WhisperX and export the trascript by following the steps below:
     - Option 1: clone the repository
     - Option 2: click the green "<> Code" button on this page and select "Download ZIP". Make sure to unzip the folder before moving on to the next step. 
 
-2. Go to the "scripts" folder
+2. Go to the "scripts" folder.
 
-3. Open the "whisper.ipynb" file in Visual Studio Code
+3. Open the "whisper.ipynb" file in Visual Studio Code.
 
 4. Set up the conda environment by following the instructions under the "Install packages" section.
 
-5. Run the script
+5. Put mp4 or wav files you wish to transcribe in the "input" folder.
+
+6. Run the script.
+
+7. Output transcripts can be found in the "output" folder.
 
 
 ## Error solution guide
