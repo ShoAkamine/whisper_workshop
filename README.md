@@ -1,5 +1,5 @@
 # WhisperX tutorial for language sciences
-This tutorial aims to help students and researchers in language sciences transcribe speech automatically using WhisperX---the state-of-the-art automatic speech recognition pipeline based on OpenAI's Whisper. I take the following approach:
+This tutorial aims to help students and researchers in language sciences transcribe speech automatically using [WhisperX](https://github.com/m-bain/whisperX)---the state-of-the-art automatic speech recognition pipeline based on OpenAI's [Whisper](https://github.com/openai/whisper). I take the following approach:
 
 1. Run WhisperX to get time-aligned transcript
 2. Export it as the following file formats:
